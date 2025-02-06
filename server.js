@@ -26,7 +26,7 @@ const notificationSchema = new mongoose.Schema({
 
 const Notification = mongoose.model("Notification", notificationSchema);
 
-// Ruta para recibir notificaciones
+// 📌 Ruta para recibir notificaciones
 app.post("/api/notificaciones", async (req, res) => {
   try {
     const { packageName, title, content, timestamp } = req.body;
@@ -43,7 +43,7 @@ app.post("/api/notificaciones", async (req, res) => {
   }
 });
 
-// Ruta para obtener todas las notificaciones
+// 📌 Ruta para obtener todas las notificaciones
 app.get("/api/notificaciones", async (req, res) => {
   try {
     const notifications = await Notification.find().sort({ timestamp: -1 });
@@ -52,6 +52,41 @@ app.get("/api/notificaciones", async (req, res) => {
     res.status(500).json({ error: "Error al obtener notificaciones" });
   }
 });
+
+// 📌 Endpoint para eliminar una notificación por ID
+app.delete("/api/notificaciones/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Notification.findByIdAndDelete(id);
+    res.json({ message: "Notificación eliminada" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar la notificación" });
+  }
+});
+
+// 📌 Endpoint para eliminar todas las notificaciones
+app.delete("/api/notificaciones", async (req, res) => {
+  try {
+    await Notification.deleteMany({});
+    res.json({ message: "Todas las notificaciones eliminadas" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar las notificaciones" });
+  }
+});
+
+// 📌 Función automática para eliminar notificaciones mayores a 24 horas
+const eliminarNotificacionesAntiguas = async () => {
+  try {
+    const hace24Horas = Date.now() - 24 * 60 * 60 * 1000;
+    await Notification.deleteMany({ timestamp: { $lt: hace24Horas } });
+    console.log("🗑️ Notificaciones antiguas eliminadas automáticamente");
+  } catch (error) {
+    console.error("❌ Error al eliminar notificaciones antiguas", error);
+  }
+};
+
+// Ejecutar cada hora
+setInterval(eliminarNotificacionesAntiguas, 60 * 60 * 1000);
 
 // Iniciar el servidor
 app.listen(PORT, () => {
