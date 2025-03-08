@@ -6,9 +6,16 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
+const corsOptions = {
+  origin: "*", 
+  methods: "GET,POST,DELETE",
+  allowedHeaders: "Content-Type",
+};
+app.use(cors(corsOptions));
 // Middleware
 app.use(express.json());
-app.use(cors());
+
 
 // Conectar a MongoDB Atlas
 mongoose
